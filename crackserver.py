@@ -19,10 +19,10 @@
 #
 
 import SimpleXMLRPCServer as sxml
-import crack
 import argparse
 import os
 import shutil
+from modules.core_crackserver import *
 
 desc = """Crackserver uses the crack.py module to setup a XMLRPC server to
 handle password cracking requests."""
@@ -45,7 +45,7 @@ else:
 
 # Create new CrackManager object to handle cracking process.
 try:
-    c = crack.CrackManager(args.c)
+    c = CrackManager(args.c)
     print "CrackManager configured successfully"
 except Exception, err:
     print "CrackManager configuration unsuccessful:\n"
