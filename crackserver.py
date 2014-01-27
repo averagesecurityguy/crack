@@ -21,6 +21,8 @@
 import SimpleXMLRPCServer as sxml
 import crack
 import argparse
+import os
+import shutil
 
 desc = """Crackserver uses the crack.py module to setup a XMLRPC server to
 handle password cracking requests."""
@@ -30,10 +32,16 @@ parser.add_argument('-l', action='store', default='127.0.0.1',
                     help='IP address to listen on. (default: 127.0.0.1)')
 parser.add_argument('-p', action='store', default='8000',
                     help='Port to listen on. (default: 8000)')
-parser.add_argument('-c', action='store', default='crack.cfg',
-                    help='Configuration file. (default: crack.cfg)')
+parser.add_argument('-c', action='store', default='crackserver.cfg',
+                    help='Configuration file. (default: crackserver.cfg)')
 
 args = parser.parse_args()
+
+#check to see if specified config file exists; if not copy default
+if os.path.exists(args.c):
+    pass
+else:
+    shutil.copyfile("default.cfg", args.c)
 
 # Create new CrackManager object to handle cracking process.
 try:
