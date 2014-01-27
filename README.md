@@ -7,6 +7,8 @@ XMLRPC Server &amp; Client for hash cracking
 
 Copyright 2011 Stephen Haywood aka AverageSecurityGuy (<https://github.com/averagesecurityguy/crack/>).
 
+Fork Contrib - Matthew C. Jones, CPA, CISA, OSCP (https://github.com/isaudits/>, <http://www.isaudits.com>)
+
 ---------------------------------------------------------------------------------------------------
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
