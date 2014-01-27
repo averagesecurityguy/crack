@@ -216,7 +216,6 @@ class CrackThread(threading.Thread):
         self.complete = True
 
 
-
 #------------------------------------------------------------------------------
 # CrackManager Class
 #------------------------------------------------------------------------------
@@ -253,8 +252,8 @@ class CrackManager():
             raise Exception("Error loading configuration file: \n{0}\n{1}\n".format(str(err), traceback.print_exc()))
             
     def crack_passwords(self, hlist, htype):
-        """Accepts an array and hash type from the xmlrpc client. Creates an id
-        and a CrackThread object and passes the id, array, and hash type to it.
+        """Accepts a hash file and hash type from the xmlrpc client. Creates an id
+        and a CrackThread object and passes the id, file, and hash type to it.
         Returns the id so that results can be obtained later.
         
         If a hash type is not supported by the server then it returns id 0."""
@@ -291,3 +290,4 @@ class CrackManager():
             del(self.processes[id])
         
         return c, r
+    

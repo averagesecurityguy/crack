@@ -24,8 +24,7 @@ import os
 import shutil
 from modules.core_crackserver import *
 
-desc = """Crackserver uses the crack.py module to setup a XMLRPC server to
-handle password cracking requests."""
+desc = """Crackserver launches a XMLRPC server to handle password cracking requests."""
 
 parser = argparse.ArgumentParser(description=desc)
 parser.add_argument('-l', action='store', default='127.0.0.1',
@@ -60,10 +59,9 @@ except Exception, err:
     print "XMLRPC server configuration unsuccessful:\n"
     print str(err)
     exit()
-    
+
 # Register CrackManager functions to be used with by XMLRPC client.
 server.register_introspection_functions()
 server.register_function(c.crack_passwords, 'crack')
 server.register_function(c.get_progress, 'results')
 server.serve_forever()
-
