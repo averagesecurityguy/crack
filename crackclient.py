@@ -45,7 +45,7 @@ args = parser.parse_args()
 # Open connection to xmlrpc server
 try:
     s = xmlrpclib.ServerProxy('http://' + args.server)
-except:
+except Exception, err:
     print "Error opening connection to server " + args.server + ": " + str(err)
 
 #Upload hash file to server, send crack request to server and receive ID
