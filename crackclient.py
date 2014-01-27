@@ -1,25 +1,18 @@
-#! python
-# Copyright 2011 Stephen Haywood aka AverageSecurityGuy
-#
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
-#
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# Crackclient makes xmlrpc calls to a crack server to automate password
-# cracking. Crackclient takes a file, a server:port combination, and a hash
-# type. The file and hash type are passed to the server and the server returns
-# an id. The id can be polled to get the results and to see if all of the
-# cracking processes are finished.
-#
+#!/usr/bin/env python
+'''
+Crackclient makes xmlrpc calls to a crack server to automate password
+cracking. Crackclient takes a file, a server:port combination, and a hash
+type. The file and hash type are passed to the server and the server returns
+an id. The id can be polled to get the results and to see if all of the
+cracking processes are finished.
+
+Acceptable hash types are defined in config file associated with
+listening crackserver instance.
+
+While crackserver.py is dependent upon core modules contained in other files,
+crackclient.pl is dependent only upon standard python modules
+
+'''
 
 import xmlrpclib
 import argparse
@@ -48,26 +41,17 @@ parser.add_argument('type', action='store', default='md5',
 #------------------------------------------------------------------------------
 
 args = parser.parse_args()
-data = []
-
-try:
-    #Open the hash file and convert it to an array before sending it in the
-    #XMLRPC request.
-    file = open(args.file, 'rb')
-    for line in file:
-        data.append(line.rstrip('\r\n'))
-    file.close()
-except Exception, err:
-    print "Error opening file " + args.file + ": " + str(err)
 
 # Open connection to xmlrpc server
 try:
     s = xmlrpclib.ServerProxy('http://' + args.server)
-except:
+except Exception, err:
     print "Error opening connection to server " + args.server + ": " + str(err)
 
-# Send request to server and receive ID
-id, msg = s.crack(data, args.type)
+#Upload hash file to server, send crack request to server and receive ID
+with open(args.file, 'rb') as handle:
+    binary_data = xmlrpclib.Binary(handle.read())
+id, msg = s.crack(binary_data, args.type)
 
 if id == 0:
     print msg

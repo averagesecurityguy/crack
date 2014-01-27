@@ -1,0 +1,6 @@
+.project
+.pydevproject
+*.pyc
+*.hash
+/crackserver.cfg
+/test
