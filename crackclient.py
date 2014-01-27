@@ -48,17 +48,6 @@ parser.add_argument('type', action='store', default='md5',
 #------------------------------------------------------------------------------
 
 args = parser.parse_args()
-data = []
-
-try:
-    #Open the hash file and convert it to an array before sending it in the
-    #XMLRPC request.
-    file = open(args.file, 'rb')
-    for line in file:
-        data.append(line.rstrip('\r\n'))
-    file.close()
-except Exception, err:
-    print "Error opening file " + args.file + ": " + str(err)
 
 # Open connection to xmlrpc server
 try:
@@ -66,8 +55,10 @@ try:
 except:
     print "Error opening connection to server " + args.server + ": " + str(err)
 
-# Send request to server and receive ID
-id, msg = s.crack(data, args.type)
+#Upload hash file to server, send crack request to server and receive ID
+with open(args.file, 'rb') as handle:
+    binary_data = xmlrpclib.Binary(handle.read())
+id, msg = s.crack(binary_data, args.type)
 
 if id == 0:
     print msg

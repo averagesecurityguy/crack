@@ -62,22 +62,18 @@ class CrackThread(threading.Thread):
                 user, id, lm, ntlm, a, b, c = line.split(':')
                 self.hashes[lm.lower()] = user
             
-            self.write_file()
-            
         elif self.hash_type == 'dcc':
             for line in self.hash_list:
                 dcc, user = line.split(':')
                 self.hashes[dcc.lower()] = user
 
-            self.write_file()
-            
         else:
             hashes = []
             for line in self.hash_list:
                 user, hash = line.split(':')
                 self.hashes[hash.lower()] = user
                 hashes.append(hash.lower())
-                
+
             self.write_file(hashes)
 
     def remove_found_hash(self, hash):
@@ -209,10 +205,15 @@ class CrackManager():
         if htype in self.config.iterkeys():
             id = str(int(time.time()))
             message = "Request accepted by server."
+            
+            #write hash data passed to file
+            with open(id + '.hash', "wb") as handle:
+                handle.write(hlist.data)
+            
             self.processes[id] = CrackThread(id, htype, hlist, self.config[htype])
             self.processes[id].start()
         else:
-            message = "Server does not support the hash type requested."
+            message = "Server does not support the hash type requested. Acceptable hash types are: " + str(sorted(self.config))
 
         return id, message
 
