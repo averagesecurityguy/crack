@@ -1,4 +1,4 @@
-#! python
+#!/usr/bin/env python
 '''
 Crackclient makes xmlrpc calls to a crack server to automate password
 cracking. Crackclient takes a file, a server:port combination, and a hash
