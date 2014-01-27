@@ -31,11 +31,10 @@ import traceback
 #-----------------------------------------------------------------------------
 class CrackThread(threading.Thread):
     """Takes an id, hash type, a hash list, and a list of commands. The hash
-    list should be in username:hash format except for pwdump and dcc hash
-    lists, which are special cases. The hash list is processed to extract
-    usernames and is then written to the disk to be used by each command. After
-    each command is run the results are processed, added to the results array,
-    and the cracked hashes are removed from the hash file."""
+    list should be in username:hash format except for special cases. 
+    The hash list is processed to extract usernames. After each command is run
+    the results are processed, added to the results array, and the cracked hashes 
+    are removed from the hash file."""
     
     def __init__(self, id, hash_type, hash_list, commands):
         threading.Thread.__init__(self)
@@ -57,80 +56,140 @@ class CrackThread(threading.Thread):
         the file to disk for processing by the commands. Pwdump files and DCC
         files are special cases. The typical input should be username:hash"""
         
-        if self.hash_type == 'pwdump':
+        #clear binary file data out of hash list and re-import the info
+        #from the temporary hash file if the file is a text file
+        self.hash_list = []
+        if self.hash_type[:4] == 'wifi':
+            pass
+        else:
+            file = open(self.hash_file, 'rb')
+            for line in file:
+                self.hash_list.append(line.rstrip('\r\n'))
+            file.close()
+        
+        #pwdump config file entries must start with "pwdump"
+        if self.hash_type[:6] == 'pwdump':
             for line in self.hash_list:
                 user, id, lm, ntlm, a, b, c = line.split(':')
-                self.hashes[lm.lower()] = user
+                key = user
+                if self.hash_type.lower()[-2:] == 'nt':
+                    self.hashes[key] = ntlm.lower()
+                else:
+                    self.hashes[key] = lm.lower()
+                    
+        #john config file entries must start with "john"    
+        elif self.hash_type[:4] == 'john':
+            if self.hash_type.lower()[-2:] == 'v2':
+                for line in self.hash_list:
+                    user, id, domain, challenge, hash, salt = line.split(':')
+                    key = user
+                    self.hashes[key] = hash.lower()
+            else:
+                for line in self.hash_list:
+                    user, id, domain, lm, ntlm, challenge = line.split(':')
+                    key = user
+                    if self.hash_type.lower()[-4:] == 'ntlm':
+                        self.hashes[key] = ntlm.lower()
+                    else:
+                        self.hashes[key] = lm.lower()
+            
+
+        #wifi config file entries must start with "wifi"
+        elif self.hash_type[:4] == 'wifi':
+            #just bring in pcap file
+            pass
             
         elif self.hash_type == 'dcc':
             for line in self.hash_list:
                 dcc, user = line.split(':')
-                self.hashes[dcc.lower()] = user
-
+                key = user
+                self.hashes[key] = dcc.lower()
+            
         else:
             hashes = []
             for line in self.hash_list:
                 user, hash = line.split(':')
-                self.hashes[hash.lower()] = user
-                hashes.append(hash.lower())
-
+                hashes.append(hash.lower())                
+                key = user
+                self.hashes[key] = hash.lower()
+                
             self.write_file(hashes)
 
-    def remove_found_hash(self, hash):
-        """Remove the found hash from the hash list, which will be rewritten to
-        the disk. This prevents us from cracking the same password twice."""
+    def process_hash(self, hash, user, password, plaintext=""):
+        '''plaintext variable is for simple output where hashes are not stored in
+        the hash table (such as wifi hashes); if this is the case, just append
+        output in plaintext field to the results table and spit it out!
+        '''
         
-        del self.hashes[hash]
-        for line in self.hash_list:
-            if re.search(hash, line):
-                self.hash_list.remove(line)
-    
-    def process_user(self, user, password):
-        """Writes the username, hash and password to the results array. Finds
-        the hash using the user. After the results are written, we remove
-        the found hash from the hash file on disk."""
+        if plaintext:
+            self.results.append(plaintext)
         
-        if user in self.hashes.itervalues():
-            for k, v in self.hashes.iteritems():
-                if v == user:
-                    self.results.append(user + ':' + k + ':' + password)
-                    self.remove_found_hash(hash)
-        
-    def process_hash(self, hash, password):
-        """Writes the username, hash and password to the results array. Finds
-        the user using the hash. After results are written, we remove the found
-        hash from the hash file on the disk."""
-        
-        if hash in self.hashes.iterkeys():
-            self.results.append(self.hashes[hash] + ':' + hash + ':' + password)
-            self.remove_found_hash(hash)
+        key = user
+        for k,v in self.hashes.items():
+            if v == hash or k == key:
+                hash = v
+                self.results.append(k+":"+password)
+                del self.hashes[k]
 
+            #remove found hashes from hash list
+            for line in self.hash_list:
+                if re.search(hash, line):
+                    self.hash_list.remove(line)
+                    
+    
     def process_output(self, output):
         """Uses regular expressions to find hashes and passwords in results and
-        passes them to either the process_hash or process_user function. Pwdump
-        and DCC results are different than typical results for other hash types
-        so I have separated them as special cases. I have REs for outputs from 
-        common programs such as rcracki and hashcat. Other REs may need to be
-        added for outputs from other programs."""
+        passes them to either the process_hash or process_user function. 
+        
+        Results may return the following:
+            -hash & password combination
+            -user & password combination
+            -single line result (designated plaintext)
+        These are positional variables in the process_hash function.        
+        """
+        
+        #replaced this regex because it was not correctly parsing passwords
+        #Regex_rcracki_mt = "([A-Za-z0-9.]+)\s+(.?)\s+hex:.*"
+        Regex_rcracki_mt = "([A-Za-z0-9.]+)\s+(.*?)\s+hex:.*"
+        #replaced this regex because was excluding user names with non-alphanumeric chars
+        #Regex_john = "([A-Za-z0-9.]*):(.*?):(.*?):.*?"
+        Regex_john = "(.*?):(.*?):(.*?):.*?"
+        Regex_hashcat_dcc = "([0-9a-f]{16,}):.*:(.*)"
+        Regex_hashcat_standard = "([0-9a-f]{16,}):(.*)"
+        Regex_pyrit = "(The password is .*)"
 
-        if self.hash_type == 'pwdump':
+        if self.hash_type[:6] == 'pwdump':
             # All REs here should be for proccessing results of pwdump commands
             # RE for output from rcracki_mt
-            for r in re.finditer("([A-Za-z0-9.]+)\s+(.?)\s+hex:.*", output):
-                self.process_user(r.group(1), r.group(2))
+            for r in re.finditer(Regex_rcracki_mt, output):
+                self.process_hash("",r.group(1), r.group(2))
+            # RE for output from john the ripper
+            for r in re.finditer(Regex_john, output):
+                self.process_hash("",r.group(1), r.group(2))
+        
+        elif self.hash_type[:4] == 'john':
+            # RE for output from john the ripper
+            for r in re.finditer(Regex_john, output):
+                self.process_hash("",r.group(1), r.group(2))
                 
+        elif self.hash_type[:4] == 'wifi':
+            # RE for output from pyrit; pass output to plaintext variable instead of into hash table
+            for r in re.finditer(Regex_pyrit, output):
+                self.process_hash("","", "", r.group(1))
+                    
         elif self.hash_type == 'dcc':
             #All REs here should be for processing results of dcc commands
             # RE for DCC output for hashcat family
-            for r in re.finditer("([0-9a-f]{16,}):.*:(.*)", output):
-                self.process_hash(r.group(1), r.group(2))
+            for r in re.finditer(Regex_hashcat_dcc, output):
+                self.process_hash(r.group(1), "", r.group(2))
         else:
             # RE for standard output for hashcat family
-            for r in re.finditer("([0-9a-f]{16,}):(.*)", output):
-                self.process_hash(r.group(1), r.group(2))
+            for r in re.finditer(Regex_hashcat_standard, output):
+                self.process_hash(r.group(1), "", r.group(2))
+        print output
 
     def write_file(self, hashes=None):
-        """Write the hashes to a file for use by the cracking commands."""
+        
         if hashes == None:
             hashes = self.hash_list
             
@@ -154,8 +213,8 @@ class CrackThread(threading.Thread):
             self.process_hash_list()
             cmd = self.fix_cmd(cmd)
             self.process_output(subprocess.check_output(cmd))
-            
         self.complete = True
+
 
 
 #------------------------------------------------------------------------------
