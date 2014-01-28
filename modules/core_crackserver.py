@@ -185,7 +185,7 @@ class CrackThread(threading.Thread):
 
     def fix_cmd(self, cmd):
         for c in xrange(len(cmd)):
-            if cmd[c] == '{file}': cmd[c] = self.hash_file
+            if cmd[c] == '{file}': cmd[c] = os.path.join(os.getcwd(),self.hash_file)
         return cmd 
 
     def run(self):
