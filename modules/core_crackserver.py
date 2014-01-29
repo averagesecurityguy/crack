@@ -10,6 +10,7 @@ import os
 import time
 import re
 import traceback
+import copy
 
 #-----------------------------------------------------------------------------
 # CrackThread Class
@@ -32,6 +33,9 @@ class CrackThread(threading.Thread):
         self.hashes = {}
         self.complete = False
         
+        print "Processing request " + id + " with hash type " + hash_type
+
+        
     def __del__(self):
         """Remove the temporary hash file"""
         os.remove(self.hash_file)
@@ -44,7 +48,7 @@ class CrackThread(threading.Thread):
         #clear binary file data out of hash list and re-import the info
         #from the temporary hash file if the file is a text file
         self.hash_list = []
-        if self.hash_type[:4] == 'wifi':
+        if self.hash_type[:4] == 'wifi' or self.hash_type[:3] == 'ike':
             pass
         else:
             file = open(self.hash_file, 'rb')
@@ -84,6 +88,12 @@ class CrackThread(threading.Thread):
             #just bring in pcap file
             pass
             
+        #ike-scan psk-crack config file entries must start with "ike"
+        elif self.hash_type[:3] == 'ike':
+            #just bring in scan file
+            pass
+        
+        #domain cached cred config file entries must start with "dcc"
         elif self.hash_type == 'dcc':
             for line in self.hash_list:
                 dcc, user = line.split(':')
@@ -142,6 +152,7 @@ class CrackThread(threading.Thread):
         Regex_hashcat_dcc = "([0-9a-f]{16,}):.*:(.*)"
         Regex_hashcat_standard = "([0-9a-f]{16,}):(.*)"
         Regex_pyrit = "(The password is .*)"
+        Regex_pskcrack = "(.*matches.*)"
 
         if self.hash_type[:6] == 'pwdump':
             # All REs here should be for proccessing results of pwdump commands
@@ -160,6 +171,11 @@ class CrackThread(threading.Thread):
         elif self.hash_type[:4] == 'wifi':
             # RE for output from pyrit; pass output to plaintext variable instead of into hash table
             for r in re.finditer(Regex_pyrit, output):
+                self.process_hash("","", "", r.group(1))
+                
+        elif self.hash_type[:3] == 'ike':
+            # RE for output from ike-scan psk-crack; pass output to plaintext variable instead of into hash table
+            for r in re.finditer(Regex_pskcrack, output):
                 self.process_hash("","", "", r.group(1))
                     
         elif self.hash_type == 'dcc':
@@ -185,7 +201,7 @@ class CrackThread(threading.Thread):
 
     def fix_cmd(self, cmd):
         for c in xrange(len(cmd)):
-            if cmd[c] == '{file}': cmd[c] = self.hash_file
+            if cmd[c] == '{file}': cmd[c] = os.path.join(os.getcwd(),self.hash_file)
         return cmd 
 
     def run(self):
@@ -193,7 +209,7 @@ class CrackThread(threading.Thread):
         include the correct file name on disk, and run the command. Once the
         command is run, we process the output, which include updating the hash
         list to remove found hashes."""
-        
+                
         for cmd in self.commands:
             self.process_hash_list()
             cmd = self.fix_cmd(cmd)
@@ -253,7 +269,11 @@ class CrackManager():
             with open(id + '.hash', "wb") as handle:
                 handle.write(hlist.data)
             
-            self.processes[id] = CrackThread(id, htype, hlist, self.config[htype])
+            #copy config commands into new list so we don't overwrite the existing config
+            #when replacing the {file} variable
+            commands = copy.deepcopy(self.config[htype])
+            
+            self.processes[id] = CrackThread(id, htype, hlist, commands)
             self.processes[id].start()
         else:
             message = "Server does not support the hash type requested. Acceptable hash types are: " + str(sorted(self.config))
