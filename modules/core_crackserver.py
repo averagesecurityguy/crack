@@ -10,6 +10,7 @@ import os
 import time
 import re
 import traceback
+import copy
 
 #-----------------------------------------------------------------------------
 # CrackThread Class
@@ -31,6 +32,9 @@ class CrackThread(threading.Thread):
         self.results = []
         self.hashes = {}
         self.complete = False
+        
+        print "Processing request " + id + " with hash type " + hash_type
+
         
     def __del__(self):
         """Remove the temporary hash file"""
@@ -205,7 +209,7 @@ class CrackThread(threading.Thread):
         include the correct file name on disk, and run the command. Once the
         command is run, we process the output, which include updating the hash
         list to remove found hashes."""
-        
+                
         for cmd in self.commands:
             self.process_hash_list()
             cmd = self.fix_cmd(cmd)
@@ -265,7 +269,11 @@ class CrackManager():
             with open(id + '.hash', "wb") as handle:
                 handle.write(hlist.data)
             
-            self.processes[id] = CrackThread(id, htype, hlist, self.config[htype])
+            #copy config commands into new list so we don't overwrite the existing config
+            #when replacing the {file} variable
+            commands = copy.deepcopy(self.config[htype])
+            
+            self.processes[id] = CrackThread(id, htype, hlist, commands)
             self.processes[id].start()
         else:
             message = "Server does not support the hash type requested. Acceptable hash types are: " + str(sorted(self.config))
