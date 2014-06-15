@@ -38,6 +38,9 @@ class CrackThread(threading.Thread):
         
     def __del__(self):
         """Remove the temporary hash file"""
+        print "Cracking session " + self.id + " is complete...the results are as follows..."
+        for r in self.results:
+            print r.rstrip('\r\n')
         os.remove(self.hash_file)
         
     def process_hash_list(self):
