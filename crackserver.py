@@ -16,8 +16,8 @@ parser.add_argument('-l', action='store', default='127.0.0.1',
                     help='IP address to listen on. (default: 127.0.0.1)')
 parser.add_argument('-p', action='store', default='8000',
                     help='Port to listen on. (default: 8000)')
-parser.add_argument('-c', action='store', default='crackserver.cfg',
-                    help='Configuration file. (default: crackserver.cfg)')
+parser.add_argument('-c', action='store', default='config/crack.cfg',
+                    help='Configuration file. (default: config/crack.cfg)')
 
 args = parser.parse_args()
 
@@ -25,7 +25,7 @@ args = parser.parse_args()
 if os.path.exists(args.c):
     pass
 else:
-    shutil.copyfile("default.cfg", args.c)
+    shutil.copyfile("config/crack.default", args.c)
 
 # Create new CrackManager object to handle cracking process.
 try:
