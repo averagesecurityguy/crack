@@ -17,6 +17,22 @@ crackclient.pl is dependent only upon standard python modules
 import xmlrpclib
 import argparse
 import time
+import os
+import shutil
+from modules.core import *
+
+#------------------------------------------------------------------------------
+# Get values from config file
+#------------------------------------------------------------------------------
+config_file = "config/crackclient.cfg"
+config_default = "config/crackclient.default"
+check_default_config(config_file, config_default)
+
+server_ip = check_config("SERVER_IP", config_file)
+if server_ip == "": server_ip = "127.0.0.1"
+
+server_port = check_config("SERVER_PORT", config_file)
+if server_port == "": server_ip = "8000"
 
 #------------------------------------------------------------------------------
 # Configure Argparse to handle command line arguments
@@ -30,10 +46,12 @@ processes are finished."""
 parser = argparse.ArgumentParser(description=desc)
 parser.add_argument('file', action='store', default='hashes.txt',
                     help='Specify a hash file (default: hashes.txt)')
-parser.add_argument('server', action='store', default='127.0.0.1:8000',
-                    help='Specify a server and port (default: 127.0.0.1:8000)')
 parser.add_argument('type', action='store', default='md5',
                     help='Specify the hash type (default: md5)')
+parser.add_argument('-s', action='store', default=server_ip,
+                    help='IP address to listen on. (default: ' + server_ip + ')')
+parser.add_argument('-p', action='store', default=server_port,
+                    help='Port to listen on. (default: ' + server_port +')')
 
 
 #------------------------------------------------------------------------------
@@ -44,7 +62,7 @@ args = parser.parse_args()
 
 # Open connection to xmlrpc server
 try:
-    s = xmlrpclib.ServerProxy('http://' + args.server)
+    s = xmlrpclib.ServerProxy('http://' + args.s+ ":" + args.p)
 except Exception, err:
     print "Error opening connection to server " + args.server + ": " + str(err)
 
