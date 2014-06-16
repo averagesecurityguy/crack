@@ -17,6 +17,7 @@ crackclient.pl is dependent only upon standard python modules
 import argparse
 import shutil
 from modules.core_crackserver import *
+from modules.core import *
 
 class hashlist:
     '''
@@ -33,6 +34,16 @@ class hashlist:
     def __init__(self, data):
         self.data = data
 
+
+#check to see if specified config file exists; if not copy default
+config_file = "config/crack.cfg"
+config_default = "config/crack.default"
+check_default_config(config_file, config_default)
+
+
+#------------------------------------------------------------------------------
+# Configure Argparse to handle command line arguments
+#------------------------------------------------------------------------------
 desc = """Crack takes a file and a hash type."""
 
 parser = argparse.ArgumentParser(description=desc)
@@ -42,6 +53,11 @@ parser.add_argument('type', action='store', default='md5',
                     help='Specify the hash type (default: md5)')
 parser.add_argument('-c', action='store', default='config/crack.cfg',
                     help='Configuration file. (default: config/crack.cfg)')
+
+
+#------------------------------------------------------------------------------
+# Main Program
+#------------------------------------------------------------------------------
 
 args = parser.parse_args()
 htype = args.type
@@ -58,7 +74,7 @@ else:
 # Create new CrackManager object to handle cracking process.
 try:
     c = CrackManager(args.c)
-    print "CrackManager configured successfully"
+    print "CrackManager configured successfully using config file " + args.c
 except Exception, err:
     print "CrackManager configuration unsuccessful:\n"
     print str(err)
