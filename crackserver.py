@@ -17,10 +17,6 @@ config_file = "config/crackserver.cfg"
 config_default = "config/crackserver.default"
 check_default_config(config_file, config_default)
 
-config_file = "config/crack.cfg"
-config_default = "config/crack.default"
-check_default_config(config_file, config_default)
-
 server_ip = check_config("SERVER_IP", config_file)
 if server_ip == "": server_ip = "127.0.0.1"
 
@@ -29,6 +25,10 @@ if server_port == "": server_port = "8000"
 
 crack_config = check_config("CRACK_CONFIG", config_file)
 if crack_config == "": crack_config = "config/crack.cfg"
+
+config_file = "config/crack.cfg"
+config_default = "config/crack.default"
+check_default_config(config_file, config_default)
 
 #------------------------------------------------------------------------------
 # Configure Argparse to handle command line arguments
