@@ -3,6 +3,10 @@ crackserver
 
 XMLRPC Server &amp; Client for hash cracking
 
+crackserver.py - server component
+crackclient.py - client component
+crack.py - same cracking functionality but performed locally instead of client / server
+
 ---------------------------------------------------------------------------------------------------
 
 Copyright 2011 Stephen Haywood aka AverageSecurityGuy (<https://github.com/averagesecurityguy/crack/>).
