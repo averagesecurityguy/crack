@@ -59,10 +59,11 @@ parser.add_argument('-p', action='store', default=server_port,
 args = parser.parse_args()
 
 # Open connection to xmlrpc server
+connect_addr = 'http://' + args.s+ ":" + args.p
 try:
-    s = xmlrpclib.ServerProxy('http://' + args.s+ ":" + args.p)
+    s = xmlrpclib.ServerProxy(connect_addr)
 except Exception, err:
-    print "Error opening connection to server " + args.server + ": " + str(err)
+    print "Error opening connection to server " + connect_addr + " - " + str(err)
 
 #Upload hash file to server, send crack request to server and receive ID
 with open(args.file, 'rb') as handle:
