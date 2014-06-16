@@ -17,6 +17,10 @@ config_file = "config/crackserver.cfg"
 config_default = "config/crackserver.default"
 check_default_config(config_file, config_default)
 
+config_file = "config/crack.cfg"
+config_default = "config/crack.default"
+check_default_config(config_file, config_default)
+
 server_ip = check_config("SERVER_IP", config_file)
 if server_ip == "": server_ip = "127.0.0.1"
 
