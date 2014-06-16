@@ -17,8 +17,6 @@ crackclient.pl is dependent only upon standard python modules
 import xmlrpclib
 import argparse
 import time
-import os
-import shutil
 from modules.core import *
 
 #------------------------------------------------------------------------------

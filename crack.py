@@ -15,7 +15,6 @@ crackclient.pl is dependent only upon standard python modules
 '''
 
 import argparse
-import shutil
 from modules.core_crackserver import *
 from modules.core import *
 
