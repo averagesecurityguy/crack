@@ -32,7 +32,7 @@ server_ip = check_config("SERVER_IP", config_file)
 if server_ip == "": server_ip = "127.0.0.1"
 
 server_port = check_config("SERVER_PORT", config_file)
-if server_port == "": server_ip = "8000"
+if server_port == "": server_port = "8000"
 
 #------------------------------------------------------------------------------
 # Configure Argparse to handle command line arguments
