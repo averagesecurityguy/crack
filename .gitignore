@@ -2,7 +2,8 @@
 .pydevproject
 *.pyc
 *.hash
-/crackserver.cfg
+/config/*.cfg
+/config/*.bak
 /test
 /test.cfg
 /hashcat.pot
