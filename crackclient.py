@@ -10,7 +10,7 @@ Acceptable hash types are defined in config file associated with
 listening crackserver instance.
 
 While crackserver.py is dependent upon core modules contained in other files,
-crackclient.pl is dependent only upon standard python modules
+crackclient.py is dependent only upon standard python modules
 
 '''
 
@@ -47,9 +47,9 @@ parser.add_argument('file', action='store', default='hashes.txt',
 parser.add_argument('type', action='store', default='md5',
                     help='Specify the hash type (default: md5)')
 parser.add_argument('-s', action='store', default=server_ip,
-                    help='IP address to listen on. (default: ' + server_ip + ')')
+                    help='IP address that the remote server is listening on. (default: ' + server_ip + ')')
 parser.add_argument('-p', action='store', default=server_port,
-                    help='Port to listen on. (default: ' + server_port +')')
+                    help='Port that the remote server is listening on. (default: ' + server_port +')')
 
 
 #------------------------------------------------------------------------------
