@@ -64,12 +64,6 @@ hashfile = open(args.file, "r")
 
 hlist = hashlist(hashfile.read())
 
-#check to see if specified config file exists; if not copy default
-if os.path.exists(args.c):
-    pass
-else:
-    shutil.copyfile("config/crack.default", args.c)
-
 # Create new CrackManager object to handle cracking process.
 try:
     c = CrackManager(args.c)

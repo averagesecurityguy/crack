@@ -9,9 +9,7 @@ crack.py - same cracking functionality but performed locally instead of client /
 
 ---------------------------------------------------------------------------------------------------
 
-Copyright 2011 Stephen Haywood aka AverageSecurityGuy (<https://github.com/averagesecurityguy/crack/>).
-
-Fork Contrib - Matthew C. Jones, CPA, CISA, OSCP (https://github.com/isaudits/>, <http://www.isaudits.com>)
+Copyright 2011 Stephen Haywood aka AverageSecurityGuy (<https://github.com/averagesecurityguy/crack/>)
 
 ---------------------------------------------------------------------------------------------------
 
